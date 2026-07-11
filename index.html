@@ -1,106 +1,134 @@
-<script>
-  const MY_LIFF_ID = "2010672308-ckTBbuPW";
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>My Personal LIFF App</title>
 
-  async function main() {
-    try {
-      await liff.init({ liffId: MY_LIFF_ID });
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-      if (liff.isLoggedIn()) {
-        // ถ้าระบบจำ Login ได้แล้ว ให้ดึงข้อมูลโปรไฟล์
-        const profile = await liff.getProfile();
-        document.getElementById("pictureUrl").src = profile.pictureUrl;
-        document.getElementById("displayName").innerText = profile.displayName;
-      } else {
-        // ถ้ายังไม่ได้ Login
-        if (liff.isInClient()) {
-          // ถ้าเปิดในแอป LINE ให้ Login อัตโนมัติได้เลย
-          liff.login();
-        } else {
-          // ถ้าเปิดบน Safari / Browser ภายนอก ห้ามสั่ง liff.login() ทันที!
-          // ให้เปลี่ยน UI แสดงปุ่มให้ผู้ใช้กด Login เองเพื่อป้องกัน Safari บล็อก
-          document.getElementById("displayName").innerText = "กรุณาเข้าสู่ระบบ";
-          document.getElementById("statusText").innerHTML = `
-            <button onclick="handleManualLogin()" style="background:#06C755; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; margin-top:8px;">
-              🔑 เข้าสู่ระบบด้วย LINE
-            </button>
-          `;
-        }
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
       }
-    } catch (err) {
-      console.error("LIFF Init Error:", err);
-    }
-  }
+      body {
+        background-color: #f4f6f8;
+        margin: 0;
+        padding: 16px;
+      }
+      .container {
+        max-width: 400px;
+        margin: 0 auto;
+      }
+      .profile-card {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        margin-bottom: 16px;
+      }
+      .profile-card img {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        margin-bottom: 8px;
+      }
+      .profile-card h3 {
+        margin: 4px 0;
+        font-size: 18px;
+        color: #333;
+      }
+      .menu-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .menu-item {
+        background: white;
+        border-radius: 12px;
+        padding: 20px 12px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        border: none;
+        transition: 0.2s;
+      }
+      .menu-item:active {
+        transform: scale(0.97);
+        background: #f0f0f0;
+      }
+      .menu-item .icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .menu-item .title {
+        font-weight: bold;
+        color: #333;
+        font-size: 14px;
+      }
+      .btn-share {
+        background: #06c755;
+        color: white;
+        width: 100%;
+        border: none;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 16px;
+        margin-top: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="profile-card">
+        <img
+          id="pictureUrl"
+          src="https://via.placeholder.com/70"
+          alt="Profile"
+        />
+        <h3 id="displayName">กำลังโหลด...</h3>
+        <p
+          id="statusText"
+          style="font-size: 12px; color: #888"
+        >
+          สถานะ: พร้อมใช้งาน
+        </p>
+      </div>
 
-  // ฟังก์ชัน Login เมื่อผู้ใช้กดปุ่มเอง
-  function handleManualLogin() {
-    liff.login({ redirectUri: window.location.href });
-  }
+      <div class="menu-grid">
+        <button
+          class="menu-item"
+          onclick="sendToCurrentChat()"
+        >
+          <span class="icon">💬</span>
+          <span class="title">ส่งเข้าแชตนี้</span>
+        </button>
+        <button
+          class="menu-item"
+          onclick="openMyLink()"
+        >
+          <span class="icon">👤</span>
+          <span class="title">แอดไลน์ส่วนตัว</span>
+        </button>
+      </div>
 
-  // 1. ส่งข้อความเข้าห้องแชตปัจจุบัน
-  async function sendToCurrentChat() {
-    if (!liff.isInClient()) {
-      alert("ฟังก์ชันนี้ใช้งานได้เฉพาะการเปิดผ่านแอป LINE บนมือถือเท่านั้นครับ");
-      return;
-    }
-    await liff.sendMessage([{ type: "text", text: "สวัสดีครับ! นี่คือข้อความทดสอบจาก LIFF 🎉" }]);
-    alert("ส่งข้อความเข้าแชตแล้ว!");
-    liff.closeWindow();
-  }
+      <button
+        class="btn-share"
+        onclick="shareFlexToFriends()"
+      >
+        🚀 แชร์การ์ดนี้ให้เพื่อนใน LINE
+      </button>
+    </div>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  // 2. ปุ่มเปิดลิงก์แอดไลน์ส่วนตัว
-  function openMyLink() {
-    liff.openWindow({
-      url: "https://line.me/ti/p/psoV4fne49", // ⚠️ อย่าลืมเปลี่ยนเป็น LINE ID / Link จริง
-      external: false
-    });
-  }
-
-  // 3. แชร์ Flex Message หาเพื่อน
-  async function shareFlexToFriends() {
-    if (!liff.isApiAvailable("shareTargetPicker")) {
-      alert("ฟังก์ชันนี้รองรับการใช้งานบนแอป LINE เท่านั้นครับ");
-      return;
-    }
-
-    try {
-      const res = await liff.shareTargetPicker([
-        {
-          type: "flex",
-          altText: "มีคนส่งการ์ดจาก LIFF มาให้คุณ!",
-          contents: {
-            type: "bubble",
-            body: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                { type: "text", text: "My LIFF Application", weight: "bold", size: "lg", color: "#06C755" },
-                { type: "text", text: "กดปุ่มด้านล่างเพื่อเปิดใช้งาน LIFF ของฉันได้เลย!", margin: "md", size: "sm", wrap: true }
-              ]
-            },
-            footer: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                {
-                  type: "button",
-                  style: "primary",
-                  color: "#06C755",
-                  action: {
-                    type: "uri",
-                    label: "เปิดดู LIFF",
-                    uri: "https://liff.line.me/2010672308-ckTBbuPW"
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]);
-      if (res) alert("แชร์ให้เพื่อนสำเร็จ!");
-    } catch (err) {
-      alert("แชร์ไม่สำเร็จ: " + err.message);
-    }
-  }
-
-  main();
-</script>
+    <script src="app.js"></script>
+  </body>
+</html>
