@@ -2,79 +2,53 @@
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-    <title>LIFF Test Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Personal LIFF App</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        text-align: center;
-        padding: 20px;
-        background-color: #f5f6f8;
-        color: #333;
-      }
-      .card {
-        background: white;
-        padding: 24px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        max-width: 360px;
-        margin: 40px auto;
-      }
-      img {
-        border-radius: 50%;
-        width: 80px;
-        height: 80px;
-        margin-bottom: 12px;
-      }
-      button {
-        background-color: #06c755;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        width: 100%;
-        margin-top: 12px;
-      }
-      button:active {
-        background-color: #05b34c;
-      }
+      * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+      body { background-color: #f4f6f8; margin: 0; padding: 16px; }
+      .container { max-width: 400px; margin: 0 auto; }
+      
+      /* การ์ดโปรไฟล์ */
+      .profile-card { background: white; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
+      .profile-card img { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 8px; }
+      .profile-card h3 { margin: 4px 0; font-size: 18px; color: #333; }
+      
+      /* จัด Layout เมนูแบบ Grid (2 คอลัมน์) */
+      .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .menu-item { background: white; border-radius: 12px; padding: 20px 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; border: none; transition: 0.2s; }
+      .menu-item:active { transform: scale(0.97); background: #f0f0f0; }
+      .menu-item .icon { font-size: 28px; margin-bottom: 8px; display: block; }
+      .menu-item .title { font-weight: bold; color: #333; font-size: 14px; }
+      
+      /* ปุ่มแชร์หลัก */
+      .btn-share { background: #06C755; color: white; width: 100%; border: none; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 16px; cursor: pointer; }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h2>LIFF Test App</h2>
-
-      <div
-        id="user-info"
-        style="display: none"
-      >
-        <img
-          id="pictureUrl"
-          src=""
-          alt="Profile Picture"
-        />
+    <div class="container">
+      <!-- แสดงโปรไฟล์ผู้ใช้งาน -->
+      <div class="profile-card">
+        <img id="pictureUrl" src="https://via.placeholder.com/70" alt="Profile">
         <h3 id="displayName">กำลังโหลด...</h3>
-        <p
-          id="userId"
-          style="font-size: 11px; color: #888; word-break: break-all"
-        ></p>
-
-        <button onclick="sendMsg()">ส่งข้อความเข้าแชท</button>
+        <p id="statusText" style="font-size: 12px; color: #888;">สถานะ: พร้อมใช้งาน</p>
       </div>
 
-      <p
-        id="status"
-        style="color: #666"
-      >
-        กำลังเชื่อมต่อ LIFF...
-      </p>
+      <!-- Layout ปุ่มเมนูภายใน LIFF -->
+      <div class="menu-grid">
+        <button class="menu-item" onclick="sendToCurrentChat()">
+          <span class="icon">💬</span>
+          <span class="title">ส่งเข้าแชตนี้</span>
+        </button>
+        <button class="menu-item" onclick="openMyLink()">
+          <span class="icon">👤</span>
+          <span class="title">แอดไลน์ส่วนตัว</span>
+        </button>
+      </div>
+
+      <!-- ปุ่มแชร์ Flex Message หาเพื่อนคนอื่น -->
+      <button class="btn-share" onclick="shareFlexToFriends()">🚀 แชร์การ์ดนี้ให้เพื่อนใน LINE</button>
     </div>
 
     <script>
@@ -82,46 +56,83 @@
 
       async function main() {
         try {
-          // เริ่มต้นทำงาน LIFF
           await liff.init({ liffId: MY_LIFF_ID });
-
           if (liff.isLoggedIn()) {
-            document.getElementById("status").innerText = "เข้าสู่ระบบสำเร็จ!";
-            getUserProfile();
+            const profile = await liff.getProfile();
+            document.getElementById("pictureUrl").src = profile.pictureUrl;
+            document.getElementById("displayName").innerText = profile.displayName;
           } else {
-            // ถ้ายังไม่ล็อกอิน ให้สั่งล็อกอินทันที
             liff.login();
           }
         } catch (err) {
-          document.getElementById("status").innerText =
-            "เกิดข้อผิดพลาด: " + err.message;
+          console.error(err);
         }
       }
 
-      // ฟังก์ชันดึงข้อมูล Profile ของผู้ใช้งาน
-      async function getUserProfile() {
-        const profile = await liff.getProfile();
-        document.getElementById("pictureUrl").src =
-          profile.pictureUrl || "https://via.placeholder.com/80";
-        document.getElementById("displayName").innerText = profile.displayName;
-        document.getElementById("userId").innerText =
-          "User ID: " + profile.userId;
-        document.getElementById("user-info").style.display = "block";
+      // 1. ส่งข้อความเข้าห้องแชตปัจจุบัน
+      async function sendToCurrentChat() {
+        if (!liff.isInClient()) {
+          alert("กรุณาเปิดผ่านแอป LINE บนมือถือครับ");
+          return;
+        }
+        await liff.sendMessage([{ type: "text", text: "สวัสดีครับ! นี่คือข้อความทดสอบจาก LIFF 🎉" }]);
+        alert("ส่งข้อความเข้าแชตแล้ว!");
+        liff.closeWindow();
       }
 
-      // ฟังก์ชันส่งข้อความแทนตัวเราเข้าห้องแชท
-      async function sendMsg() {
+      // 2. ปุ่มเปิดลิงก์แอดไลน์ส่วนตัวของคุณ
+      function openMyLink() {
+        // ⚠️ เปลี่ยนเป็นลิงก์ไลน์ส่วนตัวของคุณเอง (https://line.me/ti/p/xxx)
+        liff.openWindow({
+          url: "https://line.me/ti/p/YOUR_LINE_ID",
+          external: false
+        });
+      }
+
+      // 3. แชร์ Flex Message หาเพื่อนคนไหนก็ได้ใน LINE
+      async function shareFlexToFriends() {
+        if (!liff.isApiAvailable("shareTargetPicker")) {
+          alert("ฟังก์ชันนี้รองรับบนมือถือเท่านั้นครับ");
+          return;
+        }
+
         try {
-          await liff.sendMessage([
+          const res = await liff.shareTargetPicker([
             {
-              type: "text",
-              text: "สวัสดีครับ! ส่งข้อความผ่าน LIFF สำเร็จแล้ว 🎉",
-            },
+              type: "flex",
+              altText: "มีคนส่งการ์ดจาก LIFF มาให้คุณ!",
+              contents: {
+                type: "bubble",
+                body: {
+                  type: "box",
+                  layout: "vertical",
+                  contents: [
+                    { type: "text", text: "My LIFF Application", weight: "bold", size: "lg", color: "#06C755" },
+                    { type: "text", text: "กดปุ่มด้านล่างเพื่อเปิดใช้งาน LIFF ของฉันได้เลย!", margin: "md", size: "sm", wrap: true }
+                  ]
+                },
+                footer: {
+                  type: "box",
+                  layout: "vertical",
+                  contents: [
+                    {
+                      type: "button",
+                      style: "primary",
+                      color: "#06C755",
+                      action: {
+                        type: "uri",
+                        label: "เปิดดู LIFF",
+                        uri: "https://liff.line.me/2010672308-ckTBbuPW"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           ]);
-          alert("ส่งข้อความเรียบร้อย!");
-          liff.closeWindow(); // ปิดหน้า LIFF กลับเข้าห้องแชท
+          if (res) alert("แชร์ให้เพื่อนสำเร็จ!");
         } catch (err) {
-          alert("ส่งข้อความไม่สำเร็จ: " + err.message);
+          alert("แชร์ไม่สำเร็จ: " + err.message);
         }
       }
 
