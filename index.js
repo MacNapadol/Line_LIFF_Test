@@ -51,7 +51,7 @@ async function sendToCurrentChat() {
     return;
   }
   try {
-    await liff.sendMessages([{ type: "text", text: "สวัสดีครับ! นี่คือข้อความทดสอบจาก LIFF 🎉" }]);
+    await liff.sendMessage([{ type: "text", text: "สวัสดีครับ! นี่คือข้อความทดสอบจาก LIFF 🎉" }]);
     alert("ส่งข้อความเข้าแชตแล้ว!");
     liff.closeWindow();
   } catch (err) {
