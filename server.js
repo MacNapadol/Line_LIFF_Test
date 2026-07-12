@@ -3,6 +3,8 @@ const line = require("@line/bot-sdk");
 const path = require("path");
 const fs = require("fs");
 
+const { createFlexCarousel } = require("./utils/flexCarousel");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL =
@@ -120,27 +122,111 @@ async function handleEvent(event) {
       ? event.postback.data || ""
       : event.message.text || "";
 
+  if (actionKey.includes("action=store") || actionKey === "เมนูร้านค้า") {
+    // อนาคตเปลี่ยนเป็น: const storesData = await db.getStores();
+    const storesData = [
+      {
+        title: "เม้งการยาง",
+        desc: "บริการเปลี่ยนยาง ถ่วงล้อ",
+        icon: "🛞",
+        bgColor: "#EFF6FF",
+        textColor: "#1E3A8A",
+        linkUrl: `${BASE_URL}/store?id=meng`,
+      },
+      {
+        title: "adolf การบัญชี",
+        desc: "รับทำบัญชี และยื่นภาษีครบวงจร",
+        icon: "📊",
+        bgColor: "#F0FDF4",
+        textColor: "#14532D",
+        linkUrl: `${BASE_URL}/store?id=adolf`,
+      },
+      {
+        title: "crp ขายแต่เวย์",
+        desc: "เวย์โปรตีนแท้ 100% เกรดพรีเมียม",
+        icon: "🥤",
+        bgColor: "#FFF7ED",
+        textColor: "#7C2D12",
+        linkUrl: `${BASE_URL}/store?id=crp`,
+      },
+    ];
+
+    return await client.replyMessage({
+      replyToken: event.replyToken,
+      messages: [
+        createFlexCarousel({
+          altText: "รายการร้านค้าในเครือ",
+          items: storesData,
+          buttonLabel: "ดูรายละเอียด",
+        }),
+      ],
+    });
+  }
+
+  if (actionKey.includes("action=promotion") || actionKey === "เมนูโปรโมชัน") {
+    // อนาคตเปลี่ยนเป็น: const promotionsData = await db.getPromotions();
+    const promotionsData = [
+      {
+        title: "ลดพิเศษ 50%",
+        desc: "ส่วนลดสำหรับสมาชิกใหม่ต้อนรับเดือนนี้",
+        icon: "🏷️",
+        bgColor: "#FEF2F2",
+        textColor: "#991B1B",
+        linkUrl: `${BASE_URL}/promotion`,
+      },
+      {
+        title: "ส่งฟรี คุ้มสุดๆ",
+        desc: "เมื่อซื้อสินค้าครบ 500 บาทขึ้นไป",
+        icon: "🚚",
+        bgColor: "#FFFBEB",
+        textColor: "#92400E",
+        linkUrl: `${BASE_URL}/promotion`,
+      },
+    ];
+
+    return await client.replyMessage({
+      replyToken: event.replyToken,
+      messages: [
+        createFlexCarousel({
+          altText: "รายการโปรโมชันพิเศษ",
+          items: promotionsData,
+          buttonLabel: "รับสิทธิ์",
+        }),
+      ],
+    });
+  }
+
+  if (actionKey.includes("action=news") || actionKey === "เมนูข่าวสาร") {
+    // อนาคตเปลี่ยนเป็น: const newsData = await db.getNews();
+    const newsData = [
+      {
+        title: "อัปเดตระบบใหม่",
+        desc: "เพิ่มระบบสะสมแต้มและแลกของรางวัล",
+        icon: "📰",
+        bgColor: "#F0FDF4",
+        textColor: "#166534",
+        linkUrl: `${BASE_URL}/news`,
+      },
+    ];
+
+    return await client.replyMessage({
+      replyToken: event.replyToken,
+      messages: [
+        createFlexCarousel({
+          altText: "ข่าวสารล่าสุด",
+          items: newsData,
+          buttonLabel: "อ่านเพิ่มเติม",
+        }),
+      ],
+    });
+  }
+
   let routePath = "";
   let filename = "";
 
-  if (actionKey.includes("action=store") || actionKey === "เมนูร้านค้า") {
-    routePath = "/store";
-    filename = `store_${Date.now()}.png`;
-  } else if (
-    actionKey.includes("action=profile") ||
-    actionKey === "เมนูโปรไฟล์"
-  ) {
+  if (actionKey.includes("action=profile") || actionKey === "เมนูโปรไฟล์") {
     routePath = "/profile";
     filename = `profile_${Date.now()}.png`;
-  } else if (
-    actionKey.includes("action=promotion") ||
-    actionKey === "เมนูโปรโมชัน"
-  ) {
-    routePath = "/promotion";
-    filename = `promotion_${Date.now()}.png`;
-  } else if (actionKey.includes("action=news") || actionKey === "เมนูข่าวสาร") {
-    routePath = "/news";
-    filename = `news_${Date.now()}.png`;
   }
 
   if (routePath) {

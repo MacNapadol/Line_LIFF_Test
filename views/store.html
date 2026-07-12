@@ -2,46 +2,89 @@
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>รายการร้านค้าในเครือ</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-slate-100 p-6 font-sans flex justify-center items-center">
-    <div
-      id="capture-area"
-      class="bg-white p-6 rounded-2xl shadow-xl w-[800px]"
-    >
+  <body class="bg-slate-100 min-h-screen p-6 font-sans flex justify-center items-center">
+    
+    <div id="capture-area" class="bg-white p-6 rounded-2xl shadow-xl w-[800px]">
+      
+      <div id="selected-banner" class="hidden mb-6 p-4 rounded-xl text-center font-bold text-lg transition-all"></div>
+
       <h2 class="text-2xl font-bold text-gray-800 mb-4">
         🏪 รายการร้านค้าในเครือ
       </h2>
-      <div class="flex flex-row gap-4 overflow-x-auto pb-2">
-        <!-- ร้านที่ 1 -->
-        <div
-          class="min-w-[260px] bg-blue-50 border border-blue-200 p-5 rounded-xl text-center"
-        >
-          <div class="text-4xl mb-2">🛞</div>
-          <h3 class="font-bold text-lg text-blue-900">เม้งการยาง</h3>
-          <p class="text-sm text-gray-600 mt-1">บริการเปลี่ยนยาง ถ่วงล้อ</p>
-        </div>
-        <!-- ร้านที่ 2 -->
-        <div
-          class="min-w-[260px] bg-green-50 border border-green-200 p-5 rounded-xl text-center"
-        >
-          <div class="text-4xl mb-2">📊</div>
-          <h3 class="font-bold text-lg text-green-900">adolf การบัญชี</h3>
-          <p class="text-sm text-gray-600 mt-1">
-            รับทำบัญชี และยื่นภาษีครบวงจร
-          </p>
-        </div>
-        <!-- ร้านที่ 3 -->
-        <div
-          class="min-w-[260px] bg-orange-50 border border-orange-200 p-5 rounded-xl text-center"
-        >
-          <div class="text-4xl mb-2">🥤</div>
-          <h3 class="font-bold text-lg text-orange-900">crp ขายแต่เวย์</h3>
-          <p class="text-sm text-gray-600 mt-1">
-            เวย์โปรตีนแท้ 100% เกรดพรีเมียม
-          </p>
-        </div>
-      </div>
+
+      <div id="store-list" class="flex flex-row gap-4 overflow-x-auto pb-2"></div>
     </div>
+
+    <script>
+      const stores = [
+        {
+          id: "meng",
+          name: "เม้งการยาง",
+          desc: "บริการเปลี่ยนยาง ถ่วงล้อ",
+          icon: "🛞",
+          bgClass: "bg-blue-50",
+          borderClass: "border-blue-200",
+          textClass: "text-blue-900",
+        },
+        {
+          id: "adolf",
+          name: "adolf การบัญชี",
+          desc: "รับทำบัญชี และยื่นภาษีครบวงจร",
+          icon: "📊",
+          bgClass: "bg-green-50",
+          borderClass: "border-green-200",
+          textClass: "text-green-900",
+        },
+        {
+          id: "crp",
+          name: "crp ขายแต่เวย์",
+          desc: "เวย์โปรตีนแท้ 100% เกรดพรีเมียม",
+          icon: "🥤",
+          bgClass: "bg-orange-50",
+          borderClass: "border-orange-200",
+          textClass: "text-orange-900",
+        },
+      ];
+
+      // 1. อ่าน Query Parameter จาก URL (เช่น ?id=meng)
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedId = urlParams.get("id");
+
+      // 2. ค้นหาร้านค้าที่ตรงกับ id
+      const currentStore = stores.find((s) => s.id === selectedId);
+
+      // 3. ถ้าพบร้านค้า ให้แสดง Banner แจ้งเตือนด้านบน
+      if (currentStore) {
+        const banner = document.getElementById("selected-banner");
+        banner.classList.remove("hidden");
+        banner.className = `mb-6 p-4 rounded-xl text-center font-bold text-lg border ${currentStore.bgClass} ${currentStore.borderClass} ${currentStore.textClass}`;
+        banner.innerHTML = `👉 คุณกำลังเลือกดูร้าน: <span class="underline">${currentStore.icon} ${currentStore.name}</span>`;
+      }
+
+      // 4. แสดงการ์ดทั้งหมด พร้อมใส่ Highlight การ์ดที่ถูกกดเลือก
+      const storeContainer = document.getElementById("store-list");
+      storeContainer.innerHTML = stores
+        .map((store) => {
+          const isSelected = store.id === selectedId;
+          // ถ้าเป็นร้านที่เลือก ให้ขยายและติดกรอบ Highlight เด่นขึ้นมา
+          const activeClass = isSelected
+            ? "ring-4 ring-offset-2 ring-indigo-500 scale-105 z-10"
+            : "opacity-75 hover:opacity-100";
+
+          return `
+          <div class="min-w-[260px] border p-5 rounded-xl text-center transition-all duration-200 ${store.bgClass} ${store.borderClass} ${activeClass}">
+            <div class="text-4xl mb-2">${store.icon}</div>
+            <h3 class="font-bold text-lg ${store.textClass}">${store.name}</h3>
+            <p class="text-sm text-gray-600 mt-1">${store.desc}</p>
+            ${isSelected ? `<span class="inline-block mt-3 text-xs bg-indigo-600 text-white font-semibold px-3 py-1 rounded-full shadow">กำลังเลือกอยู่</span>` : ''}
+          </div>
+        `;
+        })
+        .join("");
+    </script>
   </body>
 </html>
