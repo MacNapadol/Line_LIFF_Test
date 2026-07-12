@@ -2,10 +2,7 @@
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>เข้าสู่ระบบด้วย LINE</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +11,6 @@
     <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center">
       <h2 class="text-2xl font-bold text-gray-800 mb-6">เข้าสู่ระบบ</h2>
 
-      <!-- สถานะก่อน Login -->
       <div id="login-section">
         <p class="text-sm text-gray-500 mb-6">
           กรุณาเข้าสู่ระบบด้วย LINE เพื่อเข้าใช้งานและรับสิทธิพิเศษ
@@ -27,30 +23,18 @@
         </button>
       </div>
 
-      <!-- สถานะหลัง Login สำเร็จ -->
-      <div
-        id="user-section"
-        class="hidden"
-      >
+      <div id="user-section" class="hidden">
         <img
           id="user-picture"
           class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-green-400 shadow-md"
           src=""
           alt="Profile"
         />
-        <h3
-          id="user-name"
-          class="text-xl font-bold text-gray-800"
-        ></h3>
-        <p
-          id="user-id"
-          class="text-xs text-gray-400 mt-1"
-        ></p>
-        <div
-          class="mt-4 bg-green-50 text-green-700 p-3 rounded-lg text-sm font-semibold"
-        >
-          ✅ เข้าสู่ระบบและเป็นเพื่อนกับ LINE OA เรียบร้อย
-        </div>
+        <h3 id="user-name" class="text-xl font-bold text-gray-800"></h3>
+        <p id="user-id" class="text-xs text-gray-400 mt-1"></p>
+
+        <div id="friend-status" class="mt-4"></div>
+
         <button
           onclick="liffLogout()"
           class="mt-6 text-sm text-red-500 hover:underline"
@@ -61,8 +45,8 @@
     </div>
 
     <script>
-      // ⚠️ นำ LIFF ID จาก LINE Developers Console มาใส่ตรงนี้
       const MY_LIFF_ID = "2010679101-06SrNurY";
+      const LINE_OA_ID = "@814ccjdq"; 
 
       async function main() {
         try {
@@ -88,7 +72,10 @@
         document.getElementById("login-section").classList.add("hidden");
         document.getElementById("user-section").classList.remove("hidden");
 
-        // ส่งข้อมูล User Profile ไปเก็บที่ Backend API ของเรา
+        // ตรวจสอบสถานะการเป็นเพื่อน
+        await checkFriendship();
+
+        // ส่งข้อมูล User Profile ไปเก็บที่ Backend API
         await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -98,6 +85,31 @@
             pictureUrl: profile.pictureUrl,
           }),
         });
+      }
+
+      // 🔍 ฟังก์ชันเช็คสถานะการเป็นเพื่อน
+      async function checkFriendship() {
+        try {
+          const friendship = await liff.getFriendship();
+          const statusContainer = document.getElementById("friend-status");
+
+          if (friendship.isFriend) {
+            // กรณีเป็นเพื่อนแล้ว
+            statusContainer.className = "p-3 bg-green-50 text-green-700 rounded-lg text-sm font-semibold border border-green-200";
+            statusContainer.innerHTML = "✅ เข้าสู่ระบบและเป็นเพื่อนกับ LINE OA เรียบร้อย";
+          } else {
+            // กรณีไม่ได้เป็นเพื่อน หรือ บล็อกอยู่
+            statusContainer.className = "p-3 bg-amber-50 text-amber-800 rounded-lg text-sm font-semibold border border-amber-200 flex flex-col gap-2";
+            statusContainer.innerHTML = `
+              <span>⚠️ คุณยังไม่ได้เพิ่มเพื่อน LINE OA</span>
+              <a href="https://line.me/R/ti/p/${LINE_OA_ID}" target="_blank" class="bg-[#06C755] hover:bg-[#05b34c] text-white font-bold py-1.5 px-3 rounded-lg text-xs transition duration-200 shadow">
+                ➕ กดเพิ่มเพื่อนที่นี่
+              </a>
+            `;
+          }
+        } catch (err) {
+          console.error("Friendship Check Error:", err);
+        }
       }
 
       function liffLogin() {
