@@ -157,7 +157,7 @@ async function handleEvent(event) {
         createFlexCarousel({
           altText: "รายการร้านค้าในเครือ",
           items: storesData,
-          buttonLabel: "ดูรายละเอียด",
+          buttonLabel: "ลงทะเบียน",
         }),
       ],
     });
