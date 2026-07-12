@@ -6,7 +6,10 @@ const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL =
+  process.env.BASE_URL ||
+  process.env.RENDER_EXTERNAL_URL ||
+  `http://localhost:${PORT}`;
 
 // ตั้งค่า LINE Config
 const config = {
@@ -39,8 +42,15 @@ app.get("/news", (req, res) =>
 // ----------------------------------------------------------------
 async function captureHtmlToImage(routePath, filename) {
   const browser = await puppeteer.launch({
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+    ],
   });
+
   const page = await browser.newPage();
 
   // เปิดไปยัง URL ภายในเครื่อง
