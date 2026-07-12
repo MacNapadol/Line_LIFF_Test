@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบด้วย LINE</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+  <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">เข้าสู่ระบบ</h2>
+
+    <!-- สถานะก่อน Login -->
+    <div id="login-section">
+      <p class="text-sm text-gray-500 mb-6">กรุณาเข้าสู่ระบบด้วย LINE เพื่อเข้าใช้งานและรับสิทธิพิเศษ</p>
+      <button onclick="liffLogin()" class="bg-[#06C755] hover:bg-[#05b34c] text-white font-bold py-3 px-6 rounded-xl w-full flex items-center justify-center gap-2 shadow-md">
+        <span>Log in with LINE</span>
+      </button>
+    </div>
+
+    <!-- สถานะหลัง Login สำเร็จ -->
+    <div id="user-section" class="hidden">
+      <img id="user-picture" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-green-400 shadow-md" src="" alt="Profile">
+      <h3 id="user-name" class="text-xl font-bold text-gray-800"></h3>
+      <p id="user-id" class="text-xs text-gray-400 mt-1"></p>
+      <div class="mt-4 bg-green-50 text-green-700 p-3 rounded-lg text-sm font-semibold">
+        ✅ เข้าสู่ระบบและเป็นเพื่อนกับ LINE OA เรียบร้อย
+      </div>
+      <button onclick="liffLogout()" class="mt-6 text-sm text-red-500 hover:underline">
+        ออกจากระบบ
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ⚠️ นำ LIFF ID จาก LINE Developers Console มาใส่ตรงนี้
+    const MY_LIFF_ID = "YOUR_LIFF_ID_HERE"; 
+
+    async function main() {
+      try {
+        await liff.init({ liffId: MY_LIFF_ID });
+        
+        if (liff.isLoggedIn()) {
+          showUserProfile();
+        }
+      } catch (err) {
+        console.error("LIFF Init Error:", err);
+      }
+    }
+
+    async function showUserProfile() {
+      const profile = await liff.getProfile();
+      
+      // แสดงข้อมูลผู้ใช้บนหน้าเว็บ
+      document.getElementById("user-picture").src = profile.pictureUrl;
+      document.getElementById("user-name").innerText = profile.displayName;
+      document.getElementById("user-id").innerText = "User ID: " + profile.userId;
+
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("user-section").classList.remove("hidden");
+
+      // ส่งข้อมูล User Profile ไปเก็บที่ Backend API ของเรา
+      await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: profile.userId,
+          displayName: profile.displayName,
+          pictureUrl: profile.pictureUrl
+        })
+      });
+    }
+
+    function liffLogin() {
+      if (!liff.isLoggedIn()) {
+        liff.login(); // สั่ง Login ➔ LINE จะเด้งหน้ายินยอม + เพิ่มเพื่อนอัตโนมัติ
+      }
+    }
+
+    function liffLogout() {
+      if (liff.isLoggedIn()) {
+        liff.logout();
+        window.location.reload();
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>

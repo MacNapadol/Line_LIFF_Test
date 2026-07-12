@@ -34,6 +34,20 @@ app.get("/news", (req, res) =>
   res.sendFile(path.join(__dirname, "views/news.html")),
 );
 
+app.use(express.json());
+
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/login.html"));
+});
+
+app.post("/api/login", (req, res) => {
+  const { userId, displayName, pictureUrl } = req.body;
+
+  console.log("Logged in User:", { userId, displayName, pictureUrl });
+
+  res.json({ status: "success", message: "User logged in successfully" });
+});
+
 // ----------------------------------------------------------------
 // 2. ฟังก์ชัน Capture HTML ออกมาเป็นรูปภาพ
 // ----------------------------------------------------------------
