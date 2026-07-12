@@ -12,7 +12,7 @@ const BASE_URL =
 
 // ตั้งค่า LINE Config
 const client = new line.messagingApi.MessagingApiClient({
-    channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN
+  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
 });
 
 // ให้บริการ Static File สำหรับภาพที่ Capture ได้
@@ -72,14 +72,18 @@ async function captureHtmlToImage(routePath, filename) {
 // ----------------------------------------------------------------
 // 3. Webhook Endpoint
 // ----------------------------------------------------------------
-app.post("/webhook", line.middleware(config), (req, res) => {
-  Promise.all(req.body.events.map(handleEvent))
-    .then((result) => res.json(result))
-    .catch((err) => {
-      console.error(err);
-      res.status(500).end();
-    });
-});
+app.post(
+  "/webhook",
+  line.middleware({ channelSecret: process.env.CHANNEL_SECRET }),
+  (req, res) => {
+    Promise.all(req.body.events.map(handleEvent))
+      .then((result) => res.json(result))
+      .catch((err) => {
+        console.error(err);
+        res.status(500).end();
+      });
+  },
+);
 
 async function handleEvent(event) {
   if (event.type !== "postback" && event.type !== "message") return null;
