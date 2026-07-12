@@ -49,38 +49,50 @@ app.post("/api/login", (req, res) => {
 // ----------------------------------------------------------------
 async function captureHtmlToImage(routePath, filename) {
   const { default: puppeteer } = await import("puppeteer");
+  let browser = null;
 
-  const browser = await puppeteer.launch({
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--single-process",
-      "--no-zygote",
-      "--no-first-run",
-      "--disable-extensions",
-    ],
-  });
+  try {
+    browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--single-process",
+        "--no-zygote",
+        "--no-first-run",
+        "--disable-extensions",
+      ],
+    });
 
-  const page = await browser.newPage();
+    const page = await browser.newPage();
 
-  // เปิดไปยัง URL ภายในเครื่อง
-  await page.goto(`http://localhost:${PORT}${routePath}`, {
-    waitUntil: "networkidle0",
-  });
+    await page.setViewport({ width: 800, height: 600 });
 
-  // เลือกแคปเฉพาะ Element #capture-area
-  const element = await page.$("#capture-area");
-  const outputDir = path.join(__dirname, "public/images");
-  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+    await page.goto(`http://localhost:${PORT}${routePath}`, {
+      waitUntil: "domcontentloaded",
+      timeout: 10000,
+    });
 
-  const filePath = path.join(outputDir, filename);
-  await element.screenshot({ path: filePath, type: "png" });
-  await browser.close();
+    const element = (await page.$("#capture-area")) || (await page.$("body"));
 
-  return `${BASE_URL}/public/images/${filename}`;
+    const outputDir = path.join(__dirname, "public/images");
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+    const filePath = path.join(outputDir, filename);
+    await element.screenshot({ path: filePath, type: "png" });
+
+    const cleanBaseUrl = BASE_URL.replace("http://", "https://");
+    return `${cleanBaseUrl}/public/images/${filename}`;
+  } catch (err) {
+    console.error("[Puppeteer Error]:", err);
+    throw err;
+  } finally {
+    if (browser !== null) {
+      await browser.close();
+    }
+  }
 }
 
 // ----------------------------------------------------------------
