@@ -11,11 +11,9 @@ const BASE_URL =
   `http://localhost:${PORT}`;
 
 // ตั้งค่า LINE Config
-const config = {
-  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
-  channelSecret: process.env.CHANNEL_SECRET,
-};
-const client = new line.Client(config);
+const client = new line.messagingApi.MessagingApiClient({
+    channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN
+});
 
 // ให้บริการ Static File สำหรับภาพที่ Capture ได้
 app.use("/public", express.static(path.join(__dirname, "public")));
