@@ -1,6 +1,5 @@
 const express = require("express");
 const line = require("@line/bot-sdk");
-const puppeteer = require("puppeteer");
 const path = require("path");
 const fs = require("fs");
 
@@ -41,6 +40,8 @@ app.get("/news", (req, res) =>
 // 2. ฟังก์ชัน Capture HTML ออกมาเป็นรูปภาพ
 // ----------------------------------------------------------------
 async function captureHtmlToImage(routePath, filename) {
+  const { default: puppeteer } = await import("puppeteer");
+
   const browser = await puppeteer.launch({
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: [
