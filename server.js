@@ -97,10 +97,12 @@ app.post(
 
 async function handleEvent(event) {
   if (event.type !== "postback" && event.type !== "message") return null;
+  if (event.type === "message" && event.message.type !== "text") return null;
 
-  // รับค่า Action จาก Rich menu (รับได้ทั้งจาก postback data หรือ text message)
   const actionKey =
-    event.type === "postback" ? event.postback.data : event.message.text;
+    event.type === "postback"
+      ? event.postback.data || ""
+      : event.message.text || "";
 
   let routePath = "";
   let filename = "";
@@ -126,15 +128,24 @@ async function handleEvent(event) {
   }
 
   if (routePath) {
-    // 1. รัน Puppeteer เพื่อแคปรูปจาก HTML
-    const imageUrl = await captureHtmlToImage(routePath, filename);
+    try {
+      console.log(`[LOG] Capturing image for ${routePath}...`);
+      const imageUrl = await captureHtmlToImage(routePath, filename);
+      console.log(`[LOG] Image created successfully: ${imageUrl}`);
 
-    // 2. ตอบกลับ LINE เป็นรูปภาพ (ใช้ ReplyToken = ฟรีค่าบริการ)
-    return client.replyMessage(event.replyToken, {
-      type: "image",
-      originalContentUrl: imageUrl,
-      previewImageUrl: imageUrl,
-    });
+      return await client.replyMessage({
+        replyToken: event.replyToken,
+        messages: [
+          {
+            type: "image",
+            originalContentUrl: imageUrl,
+            previewImageUrl: imageUrl,
+          },
+        ],
+      });
+    } catch (error) {
+      console.error("[ERROR inside handleEvent]:", error);
+    }
   }
 
   return Promise.resolve(null);
