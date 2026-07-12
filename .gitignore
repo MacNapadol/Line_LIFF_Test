@@ -1,0 +1,39 @@
+# Dependencies (โฟลเดอร์ติดตั้งแพ็กเกจ)
+node_modules/
+
+# Captured / Generated Images (รูปภาพที่ระบบแคปสร้างขึ้นมา ไม่ควรดันขึ้น Git)
+public/images/*
+!public/images/.gitkeep
+
+# Environment variables & Secrets (ไฟล์เก็บ Token / Key ลับ)
+.env
+.env.local
+.env.production
+config.json
+
+# Logs (ไฟล์บันทึกการทำงาน/ข้อผิดพลาด)
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / System Files (ไฟล์ขยะของระบบปฏิบัติการ)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE & Code Editor Files (ตั้งค่าโปรแกรมเขียนโค้ด)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary / Cache Files
+.cache/
+dist/
+tmp/

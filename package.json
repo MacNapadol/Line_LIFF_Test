@@ -1,0 +1,27 @@
+{
+  "name": "line_liff_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MacNapadol/Line_LIFF_Test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MacNapadol/Line_LIFF_Test/issues"
+  },
+  "homepage": "https://github.com/MacNapadol/Line_LIFF_Test#readme",
+  "dependencies": {
+    "@line/bot-sdk": "^11.2.0",
+    "express": "^5.2.1",
+    "puppeteer": "^25.3.0"
+  }
+}
