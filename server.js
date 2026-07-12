@@ -57,6 +57,10 @@ async function captureHtmlToImage(routePath, filename) {
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
       "--disable-gpu",
+      "--single-process",
+      "--no-zygote",
+      "--no-first-run",
+      "--disable-extensions",
     ],
   });
 
